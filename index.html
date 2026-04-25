@@ -1,215 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Result Portal</title>
-  <style>
-    /* Reset and base */
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #4a68d1 0%, #7f9cf5 100%);
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      color: #2c3e50;
-    }
-    .container {
-      background: #fff;
-      border-radius: 16px;
-      padding: 40px 30px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 16px 32px rgba(74,104,209,0.25);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      animation: fadeInUp 0.8s ease forwards;
-    }
-    @keyframes fadeInUp {
-      0% {
-        opacity: 0;
-        transform: translateY(20px);
+<script>
+const sheetID = "1Soy2jKf2Ap9R50iJ_5JRPBxCsFWmg4mz5H0poetTTIA";
+const sheetName = "Sheet1"; // change if different
+
+const sheetURL = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
+
+async function searchResult() {
+  const enroll = document.getElementById("enroll").value;
+  const sem = document.getElementById("semester").value;
+
+  try {
+    const res = await fetch(sheetURL);
+    const data = await res.json();
+
+    let found = false;
+
+    data.forEach(row => {
+      if (row.Enrollment == enroll && row.Semester == sem) {
+        found = true;
+        document.getElementById("output").innerHTML =
+          `Result Found <br><a href="${row["PDF Link"]}" target="_blank">Open PDF</a>`;
       }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    h2 {
-      margin: 0;
-      font-weight: 700;
-      font-size: 2.1rem;
-      color: #34495e;
-      letter-spacing: 0.03em;
-    }
-    input[type="text"] {
-      padding: 15px 20px;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: 1.8px solid #ddd;
-      transition: 0.3s;
-      width: 100%;
-      font-weight: 500;
-      color: #34495e;
-      background-color: #f9fbff;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-    }
-    input[type="text"]::placeholder {
-      color: #a4a9b2;
-      font-weight: 400;
-    }
-    input[type="text"]:focus {
-      border-color: #4a68d1;
-      box-shadow: 0 0 8px rgba(74,104,209,0.35);
-      outline: none;
-      background-color: #fff;
-    }
-    button {
-      padding: 16px;
-      font-size: 1.125rem;
-      font-weight: 700;
-      border-radius: 12px;
-      border: none;
-      background: #4a68d1;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 8px 15px rgba(74,104,209,0.4);
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      user-select: none;
-    }
-    button:hover, button:focus {
-      background-color: #3b53b3;
-      transform: translateY(-2px);
-      box-shadow: 0 12px 20px rgba(59,83,179,0.55);
-      outline: none;
-    }
-    #output {
-      min-height: 72px;
-      font-size: 1.125rem;
-      font-weight: 600;
-      line-height: 1.4;
-      margin-top: 8px;
-    }
-    #output.success {
-      color: #27ae60;
-    }
-    #output.error {
-      color: #e74c3c;
-    }
-    #output a {
-      color: #1D3DD2;
-      text-decoration: none;
-      font-weight: 700;
-      transition: color 0.3s ease;
-    }
-    #output a:hover, #output a:focus {
-      text-decoration: underline;
-      color: #122a7a;
-      outline: none;
+    });
+
+    if (!found) {
+      document.getElementById("output").innerText = "Result not found";
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 480px) {
-      .container {
-        padding: 32px 24px;
-      }
-      h2 {
-        font-size: 1.8rem;
-      }
-      input[type="text"] {
-        font-size: 0.95rem;
-        padding: 14px 16px;
-      }
-      button {
-        font-size: 1rem;
-        padding: 14px;
-      }
-      #output {
-        font-size: 1rem;
-      }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation: none !important;
-        transition: none !important;
-      }
-    }
-  </style>
-</head>
-<body>
-  <main class="container" role="main" aria-label="Student Result Checker">
-    <h2>Check Student Result</h2>
-
-    <input type="text" id="enroll" name="enroll" placeholder="Enter Enrollment" autocomplete="off" aria-label="Enrollment Number" />
-    <input type="text" id="semester" name="semester" placeholder="Enter Semester" autocomplete="off" aria-label="Semester" />
-
-    <button type="button" onclick="searchResult()" aria-live="polite" aria-label="Search Result Button">Search</button>
-
-    <div id="output" aria-live="assertive" role="alert"></div>
-  </main>
-
-  <script>
-    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT0FWg4UvbOYYXWP_A2InvoAI20SdRctgL3KISYa5DXiMYlypYzkZNoPxSVKeEqveRK4gi1SvJbrQ27/pub?output=csv";
-
-    async function searchResult() {
-      const enrollInput = document.getElementById("enroll");
-      const semInput = document.getElementById("semester");
-      const output = document.getElementById("output");
-
-      const enroll = enrollInput.value.trim();
-      const sem = semInput.value.trim();
-
-      output.className = '';
-      if (!enroll || !sem) {
-        output.classList.add('error');
-        output.textContent = "Please fill in both Enrollment and Semester.";
-        return;
-      }
-
-      output.classList.remove('error', 'success');
-      output.textContent = "Searching...";
-
-      try {
-        const res = await fetch(sheetURL);
-        if (!res.ok) throw new Error("Network response was not ok");
-
-        const data = await res.text();
-        const rows = data.split("\n").slice(1);
-        let found = false;
-
-        for (const row of rows) {
-          // Support CSV values with commas inside quotes by using basic split only for now
-          // Consider a proper CSV parser for production
-          const cols = row.split(",");
-          if (cols[0]?.trim() === enroll && cols[2]?.trim() === sem) {
-            found = true;
-            output.classList.add('success');
-            output.innerHTML = `
-              Result Found!<br>
-              <a href="${cols[3]?.trim()}" target="_blank" rel="noopener noreferrer" tabindex="0">Open PDF</a>
-            `;
-            break;
-          }
-        }
-
-        if (!found) {
-          output.classList.add('error');
-          output.textContent = "Result not found.";
-        }
-      } catch (error) {
-        output.classList.add('error');
-        output.textContent = "Error fetching data, please try again later.";
-        console.error(error);
-      }
-    }
-  </script>
-</body>
-</html>
+  } catch (error) {
+    document.getElementById("output").innerText =
+      "Error fetching data, please try again later.";
+  }
+}
+</script>
