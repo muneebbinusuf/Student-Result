@@ -1,3 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Result Portal</title>
+</head>
+<body>
+
+<h2>Check Result</h2>
+
+<input type="text" id="enroll" placeholder="Enter Enrollment"><br><br>
+<input type="text" id="semester" placeholder="Enter Semester"><br><br>
+
+<button onclick="searchResult()">Search</button>
+
+<h3 id="output"></h3>
+
 <script>
 const sheetID = "1Soy2jKf2Ap9R50iJ_5JRPBxCsFWmg4mz5H0poetTTIA";
 const sheetName = "Sheet1"; // change if different
@@ -32,3 +48,6 @@ async function searchResult() {
   }
 }
 </script>
+
+</body>
+</html>
