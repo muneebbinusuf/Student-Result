@@ -1,175 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Result Portal</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Result Portal</title>
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#4a90e2,#145ca8);
+  margin:0;
+  display:flex;
+  justify-content:center;
+  padding:40px;
+}
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #4a90e2 0%, #145ca8 100%);
-      color: #222;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 40px 20px;
-    }
+.box {
+  background:#fff;
+  padding:25px;
+  width:420px;
+  border-radius:10px;
+}
 
-    .container {
-      background: #fff;
-      max-width: 440px;
-      width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 14px 30px rgba(20, 92, 168, 0.25);
-      padding: 30px 40px;
-      text-align: center;
-    }
+input, select {
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+}
 
-    .title {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #145ca8;
-    }
+button {
+  width:100%;
+  padding:10px;
+  background:#145ca8;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
 
-    .subtitle {
-      font-size: 1rem;
-      color: #4a90e2;
-      margin-bottom: 28px;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-      text-align: left;
-    }
-
-    label {
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #1a237e;
-    }
-
-    input, select {
-      padding: 14px 16px;
-      font-size: 1rem;
-      border: 2px solid #cfd8dc;
-      border-radius: 8px;
-    }
-
-    .btn {
-      cursor: pointer;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      border: none;
-      padding: 14px 0;
-      background-color: #145ca8;
-      color: #fff;
-    }
-
-    .output {
-      margin-top: 28px;
-      min-height: 120px;
-    }
-
-    .result-card {
-      border: 2px solid #4a90e2;
-      border-radius: 12px;
-      padding: 20px;
-      background-color: #e8f0fe;
-    }
-
-    .pdf-viewer {
-      width: 100%;
-      height: 70vh;
-      margin-top: 15px;
-      border: none;
-      border-radius: 10px;
-      background: #fff;
-    }
-
-    .error {
-      color: red;
-    }
-  </style>
+iframe {
+  width:100%;
+  height:500px;
+  border:none;
+  margin-top:10px;
+}
+</style>
 </head>
 
 <body>
-  <main class="container">
-    <h1 class="title">Student Result Portal</h1>
-    <p class="subtitle">Search your semester results</p>
 
-    <form onsubmit="event.preventDefault(); searchResult();">
-      <label>Enrollment Number</label>
-      <input type="text" id="enroll" required />
+<div class="box">
+<h2>Student Result Portal</h2>
 
-      <label>Semester</label>
-      <select id="semester" required>
-        <option value="" disabled selected>Select Semester</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-      </select>
+<input id="enroll" placeholder="Enrollment">
+<select id="sem">
+  <option value="">Semester</option>
+  <option>1</option><option>2</option><option>3</option>
+  <option>4</option><option>5</option><option>6</option>
+  <option>7</option><option>8</option>
+</select>
 
-      <button class="btn">Search</button>
-    </form>
+<button onclick="search()">Search</button>
 
-    <div id="output" class="output"></div>
-  </main>
+<div id="out"></div>
+</div>
 
 <script>
-const apiURL = "https://script.google.com/macros/s/AKfycbxqi_qnEnvLk5ZuYjI_BfwV-X5imaGrlr_A92QndsSfvUDy9pqLRKPgPa8tzN1B0VaI/exec";
+const API = "https://script.google.com/macros/s/AKfycbxqi_qnEnvLk5ZuYjI_BfwV-X5imaGrlr_A92QndsSfvUDy9pqLRKPgPa8tzN1B0VaI/exec";
 
-async function searchResult() {
-  const enroll = document.getElementById("enroll").value.trim();
-  const sem = document.getElementById("semester").value;
-  const output = document.getElementById("output");
+async function search() {
+  const e = enroll.value;
+  const s = sem.value;
+  out.innerHTML = "Loading...";
 
-  output.innerHTML = "Searching...";
+  const res = await fetch(`${API}?enrollment=${e}&semester=${s}`);
+  const data = await res.json();
 
-  const url = `${apiURL}?enrollment=${encodeURIComponent(enroll)}&semester=${encodeURIComponent(sem)}`;
-
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const data = await res.json();
-
-    if (!data.length) {
-      output.innerHTML = "<p class='error'>No result found</p>";
-      return;
-    }
-
-    const result = data[0];
-    const fileId = result.FileId;
-
-    const pdfURL = `${apiURL}?fileId=${encodeURIComponent(fileId)}`;
-
-    output.innerHTML = `
-      <div class="result-card">
-        <h2>Result Found</h2>
-        <p><strong>Course:</strong> ${result.Course}</p>
-        <p><strong>Semester:</strong> ${result.Semester}</p>
-
-        <iframe 
-          class="pdf-viewer"
-          src="${pdfURL}">
-        </iframe>
-      </div>
-    `;
-  } catch (e) {
-    output.innerHTML = "<p class='error'>Error loading result</p>";
+  if (!data.length) {
+    out.innerHTML = "No result";
+    return;
   }
+
+  const r = data[0];
+
+  const pdf = `${API}?fileId=${r.FileId}`;
+  const download = `https://drive.google.com/uc?export=download&id=${r.FileId}`;
+
+  out.innerHTML = `
+    <h3>${r.Course}</h3>
+    <p>Semester: ${r.Semester}</p>
+
+    <a href="${download}" target="_blank">Download PDF</a>
+
+    <iframe src="${pdf}"></iframe>
+  `;
 }
 </script>
 
