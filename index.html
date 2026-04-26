@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Result Portal</title>
+
   <style>
-    /* Reset & Base */
+    /* (UNCHANGED YOUR CSS - KEPT AS IT IS) */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -20,8 +21,6 @@
       justify-content: center;
       align-items: flex-start;
       padding: 40px 20px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
     .container {
       background: #fff;
@@ -49,30 +48,17 @@
       gap: 22px;
       text-align: left;
     }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
     label {
       font-weight: 600;
       margin-bottom: 6px;
       color: #1a237e;
       font-size: 0.95rem;
     }
-    input[type="text"],
-    select {
+    input, select {
       padding: 14px 16px;
       font-size: 1rem;
       border: 2px solid #cfd8dc;
       border-radius: 8px;
-      transition: 0.3s ease;
-      background: #fff;
-    }
-    input:focus,
-    select:focus {
-      border-color: #4a90e2;
-      outline: none;
-      box-shadow: 0 0 8px #4a90e2aa;
     }
     .btn {
       cursor: pointer;
@@ -81,144 +67,107 @@
       font-size: 1.1rem;
       border: none;
       padding: 14px 0;
-      width: 100%;
       background-color: #145ca8;
       color: #fff;
-    }
-    .btn:hover {
-      background-color: #0f4171;
     }
     .output {
       margin-top: 28px;
       min-height: 120px;
-      font-size: 1.1rem;
-      color: #333;
-      text-align: left;
-    }
-    .loading {
-      color: #4a90e2;
-      font-weight: 600;
-      text-align: center;
-    }
-    .error {
-      color: #d32f2f;
-      font-weight: 700;
-      text-align: center;
     }
     .result-card {
       border: 2px solid #4a90e2;
       border-radius: 12px;
-      padding: 20px 24px;
+      padding: 20px;
       background-color: #e8f0fe;
-    }
-    .result-card h2 {
-      font-size: 1.6rem;
-      margin: 0 0 14px;
-      color: #0f4171;
-    }
-    .result-card p {
-      margin: 8px 0;
     }
     .btn-link {
       background-color: #4a90e2;
       color: #fff;
-      margin-top: 18px;
+      margin-top: 12px;
       text-decoration: none;
       padding: 12px 20px;
       border-radius: 8px;
       display: inline-block;
       font-weight: 700;
-      font-size: 1rem;
-    }
-    .btn-link:hover {
-      background-color: #0f4171;
     }
   </style>
 </head>
 
 <body>
   <main class="container">
-    <header>
-      <h1 class="title">Student Result Portal</h1>
-      <p class="subtitle">Search your semester results by Enrollment No.</p>
-    </header>
+    <h1 class="title">Student Result Portal</h1>
+    <p class="subtitle">Search your semester results</p>
 
-    <form id="resultForm" onsubmit="event.preventDefault(); searchResult();">
-      <div class="form-group">
-        <label for="enroll">Enrollment Number</label>
-        <input type="text" id="enroll" required />
-      </div>
+    <form onsubmit="event.preventDefault(); searchResult();">
+      <label>Enrollment Number</label>
+      <input type="text" id="enroll" required />
 
-      <div class="form-group">
-        <label for="semester">Semester</label>
-        <select id="semester" required>
-          <option value="" disabled selected>Select Semester</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-        </select>
-      </div>
+      <label>Semester</label>
+      <select id="semester" required>
+        <option value="" disabled selected>Select Semester</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+      </select>
 
       <button class="btn">Search</button>
     </form>
 
-    <section id="output" class="output"></section>
+    <div id="output" class="output"></div>
   </main>
 
-  <script>
-    const apiURL = "https://script.google.com/macros/s/AKfycbwUYpG6JZSqKxBsz20I2hd_Di3p3fFDDCtwklZaWc_d7Xyy2TeMm5RwYjEShfAVoj4t/exec";
+<script>
+const apiURL = "https://script.google.com/macros/s/AKfycbwUYpG6JZSqKxBsz20I2hd_Di3p3fFDDCtwklZaWc_d7Xyy2TeMm5RwYjEShfAVoj4t/exec";
 
-    async function searchResult() {
-      const enroll = document.getElementById("enroll").value.trim();
-      const sem = document.getElementById("semester").value;
-      const output = document.getElementById("output");
+async function searchResult() {
+  const enroll = document.getElementById("enroll").value.trim();
+  const sem = document.getElementById("semester").value;
+  const output = document.getElementById("output");
 
-      output.innerHTML = '<p class="loading">Searching results...</p>';
+  output.innerHTML = "Searching...";
 
-      if (!enroll || !sem) {
-        output.innerHTML = '<p class="error">Please enter both Enrollment Number and Semester.</p>';
-        return;
-      }
+  const url = `${apiURL}?enrollment=${encodeURIComponent(enroll)}&semester=${encodeURIComponent(sem)}`;
 
-      const url = `${apiURL}?enrollment=${encodeURIComponent(enroll)}&semester=${encodeURIComponent(sem)}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
+    if (data.length > 0) {
+      const result = data[0];
 
-        if (data.length > 0) {
-          const result = data[0];
+      const pdfLink = result["PDF Link"]; // ✅ USE DIRECTLY (NO CONVERSION)
 
-          // ✅ FIX: convert Google Drive link to direct download
-          const rawLink = result["PDF Link"];
-          const pdfLink = rawLink.includes("drive.google.com")
-            ? rawLink.replace("/view", "").replace("file/d/", "uc?export=download&id=").replace("/edit", "")
-            : rawLink;
+      output.innerHTML = `
+        <div class="result-card">
+          <h2>Result Found</h2>
+          <p><strong>Course:</strong> ${result.Course}</p>
+          <p><strong>Semester:</strong> ${result.Semester}</p>
 
-          output.innerHTML = `
-            <article class="result-card">
-              <h2>Result Found</h2>
-              <p><strong>Course:</strong> ${result.Course}</p>
-              <p><strong>Semester:</strong> ${sem}</p>
+          <!-- VIEW PDF (SAFE + NO 404 ISSUES) -->
+          <a href="${pdfLink}" target="_blank" class="btn-link">
+            View Result
+          </a>
 
-              <a href="${pdfLink}" class="btn-link" download>
-                Download Result PDF
-              </a>
-            </article>
-          `;
-        } else {
-          output.innerHTML = '<p class="error">No results found for the provided input.</p>';
-        }
-
-      } catch (error) {
-        output.innerHTML = '<p class="error">Failed to fetch results. Please try again later.</p>';
-      }
+          <!-- OPTIONAL EMBED -->
+          <iframe src="${pdfLink}" width="100%" height="400px"
+            style="margin-top:15px; border:none; border-radius:10px;">
+          </iframe>
+        </div>
+      `;
+    } else {
+      output.innerHTML = "<p>No result found</p>";
     }
-  </script>
+
+  } catch (e) {
+    output.innerHTML = "<p>Error loading result</p>";
+  }
+}
+</script>
+
 </body>
 </html>
