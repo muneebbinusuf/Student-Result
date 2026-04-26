@@ -4,9 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Result Portal</title>
-
   <style>
-    /* (UNCHANGED YOUR CSS - KEPT AS IT IS) */
+    /* Reset & Base */
     *, *::before, *::after {
       box-sizing: border-box;
     }
@@ -21,6 +20,8 @@
       justify-content: center;
       align-items: flex-start;
       padding: 40px 20px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     .container {
       background: #fff;
@@ -29,6 +30,7 @@
       border-radius: 12px;
       box-shadow: 0 14px 30px rgba(20, 92, 168, 0.25);
       padding: 30px 40px;
+      box-sizing: border-box;
       text-align: center;
     }
     .title {
@@ -48,126 +50,214 @@
       gap: 22px;
       text-align: left;
     }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
     label {
       font-weight: 600;
       margin-bottom: 6px;
       color: #1a237e;
       font-size: 0.95rem;
     }
-    input, select {
+    input[type="text"],
+    select {
       padding: 14px 16px;
       font-size: 1rem;
       border: 2px solid #cfd8dc;
       border-radius: 8px;
+      transition: 0.3s ease border-color, 0.3s ease box-shadow;
+      appearance: none;
+      background: #fff url('data:image/svg+xml;utf8,<svg fill="%234a90e2" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 16px center;
+      background-size: 16px;
+    }
+    input[type="text"]:focus,
+    select:focus {
+      border-color: #4a90e2;
+      outline: none;
+      box-shadow: 0 0 8px #4a90e2aa;
+      background-color: #fff;
+    }
+    /* Remove default arrow in IE */
+    select::-ms-expand {
+      display: none;
     }
     .btn {
       cursor: pointer;
       border-radius: 8px;
       font-weight: 700;
       font-size: 1.1rem;
+      transition: background-color 0.3s ease;
       border: none;
+      text-decoration: none;
+      display: inline-block;
       padding: 14px 0;
+      width: 100%;
+      text-align: center;
       background-color: #145ca8;
       color: #fff;
+    }
+    .btn:hover,
+    .btn:focus {
+      background-color: #0f4171;
+      outline: none;
     }
     .output {
       margin-top: 28px;
       min-height: 120px;
+      font-size: 1.1rem;
+      color: #333;
+      text-align: left;
+    }
+    .loading {
+      color: #4a90e2;
+      font-weight: 600;
+      text-align: center;
+    }
+    .error {
+      color: #d32f2f;
+      font-weight: 700;
+      text-align: center;
     }
     .result-card {
       border: 2px solid #4a90e2;
       border-radius: 12px;
-      padding: 20px;
+      padding: 20px 24px;
+      box-shadow: 0 6px 18px rgba(74,144,226,0.15);
       background-color: #e8f0fe;
+    }
+    .result-card h2 {
+      font-size: 1.6rem;
+      margin: 0 0 14px;
+      color: #0f4171;
+    }
+    .result-card p {
+      margin: 8px 0;
+      font-size: 1.1rem;
     }
     .btn-link {
       background-color: #4a90e2;
       color: #fff;
-      margin-top: 12px;
+      margin-top: 18px;
       text-decoration: none;
       padding: 12px 20px;
       border-radius: 8px;
       display: inline-block;
       font-weight: 700;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .btn-link:hover,
+    .btn-link:focus {
+      background-color: #0f4171;
+      outline: none;
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 20px 12px;
+      }
+      .container {
+        padding: 25px 20px;
+        max-width: 100%;
+      }
+      .title {
+        font-size: 1.6rem;
+      }
+      .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 22px;
+      }
+      input[type="text"],
+      select {
+        font-size: 1rem;
+        padding: 12px 14px;
+      }
+      .btn,
+      .btn-link {
+        font-size: 1rem;
+        padding: 12px 0;
+      }
+      .output {
+        font-size: 1rem;
+        min-height: 100px;
+      }
     }
   </style>
 </head>
-
 <body>
-  <main class="container">
-    <h1 class="title">Student Result Portal</h1>
-    <p class="subtitle">Search your semester results</p>
+  <main class="container" role="main">
+    <header>
+      <h1 class="title">Student Result Portal</h1>
+      <p class="subtitle">Search your semester results by Enrollment No.</p>
+    </header>
 
-    <form onsubmit="event.preventDefault(); searchResult();">
-      <label>Enrollment Number</label>
-      <input type="text" id="enroll" required />
+    <form id="resultForm" onsubmit="event.preventDefault(); searchResult();" novalidate>
+      <div class="form-group">
+        <label for="enroll">Enrollment Number</label>
+        <input type="text" id="enroll" name="enroll" placeholder="Enter Enrollment Number" required minlength="3" autocomplete="off" />
+      </div>
 
-      <label>Semester</label>
-      <select id="semester" required>
-        <option value="" disabled selected>Select Semester</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-      </select>
+      <div class="form-group">
+        <label for="semester">Semester</label>
+        <select id="semester" name="semester" required>
+          <option value="" disabled selected>Select Semester</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+        </select>
+      </div>
 
-      <button class="btn">Search</button>
+      <button type="submit" class="btn">Search</button>
     </form>
 
-    <div id="output" class="output"></div>
+    <section id="output" aria-live="polite" class="output"></section>
   </main>
 
-<script>
-const apiURL = "https://script.google.com/macros/s/AKfycbwUYpG6JZSqKxBsz20I2hd_Di3p3fFDDCtwklZaWc_d7Xyy2TeMm5RwYjEShfAVoj4t/exec";
+  <script>
+    const apiURL = "https://script.google.com/macros/s/AKfycbwUYpG6JZSqKxBsz20I2hd_Di3p3fFDDCtwklZaWc_d7Xyy2TeMm5RwYjEShfAVoj4t/exec";
 
-async function searchResult() {
-  const enroll = document.getElementById("enroll").value.trim();
-  const sem = document.getElementById("semester").value;
-  const output = document.getElementById("output");
+    async function searchResult() {
+      const enroll = document.getElementById("enroll").value.trim();
+      const sem = document.getElementById("semester").value;
+      const output = document.getElementById("output");
 
-  output.innerHTML = "Searching...";
+      output.innerHTML = '<p class="loading" aria-live="assertive">Searching results...</p>';
 
-  const url = `${apiURL}?enrollment=${encodeURIComponent(enroll)}&semester=${encodeURIComponent(sem)}`;
+      if (!enroll || !sem) {
+        output.innerHTML = '<p class="error">Please enter both Enrollment Number and Semester.</p>';
+        return;
+      }
 
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
+      const url = `${apiURL}?enrollment=${encodeURIComponent(enroll)}&semester=${encodeURIComponent(sem)}`;
 
-    if (data.length > 0) {
-      const result = data[0];
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
 
-      const pdfLink = result["PDF Link"]; // ✅ USE DIRECTLY (NO CONVERSION)
-
-      output.innerHTML = `
-        <div class="result-card">
-          <h2>Result Found</h2>
-          <p><strong>Course:</strong> ${result.Course}</p>
-          <p><strong>Semester:</strong> ${result.Semester}</p>
-
-          <!-- VIEW PDF (SAFE + NO 404 ISSUES) -->
-          <a href="${pdfLink}" target="_blank" class="btn-link">
-            View Result
-          </a>
-
-          <!-- OPTIONAL EMBED -->
-          <iframe src="${pdfLink}" width="100%" height="400px"
-            style="margin-top:15px; border:none; border-radius:10px;">
-          </iframe>
-        </div>
-      `;
-    } else {
-      output.innerHTML = "<p>No result found</p>";
+        if (data.length > 0) {
+          const result = data[0];
+          output.innerHTML = `
+            <article class="result-card" tabindex="0">
+              <h2>Result Found</h2>
+              <p><strong>Course:</strong> ${result.Course}</p>
+              <p><strong>Semester:</strong> ${sem}</p>
+              <a href="${result["PDF Link"]}" target="_blank" rel="noopener noreferrer" class="btn-link" aria-label="Open Result PDF">View Result PDF</a>
+            </article>
+          `;
+        } else {
+          output.innerHTML = '<p class="error">No results found for the provided input.</p>';
+        }
+      } catch (error) {
+        output.innerHTML = '<p class="error">Failed to fetch results. Please try again later.</p>';
+      }
     }
-
-  } catch (e) {
-    output.innerHTML = "<p>Error loading result</p>";
-  }
-}
-</script>
-
+  </script>
 </body>
 </html>
