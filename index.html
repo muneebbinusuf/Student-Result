@@ -1,98 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Result Portal</title>
 
 <style>
 body {
-  font-family: Arial;
-  background: linear-gradient(135deg,#4a90e2,#145ca8);
-  margin:0;
-  display:flex;
-  justify-content:center;
-  padding:40px;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #4a90e2, #145ca8);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 30px;
 }
 
-.box {
-  background:#fff;
-  padding:25px;
-  width:420px;
-  border-radius:10px;
+.container {
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1 {
+  text-align: center;
+  color: #145ca8;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #555;
+  margin-bottom: 20px;
 }
 
 input, select {
-  width:100%;
-  padding:10px;
-  margin:10px 0;
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
 button {
-  width:100%;
-  padding:10px;
-  background:#145ca8;
-  color:#fff;
-  border:none;
-  cursor:pointer;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #145ca8;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
+button:hover {
+  background: #0f447c;
+}
+
+/* RESULT CARD */
+.card {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  background: #eef5ff;
+  border-left: 5px solid #145ca8;
+}
+
+.card h2 {
+  margin: 0;
+  color: #145ca8;
+}
+
+.info {
+  margin: 8px 0;
+  color: #333;
+}
+
+/* LOADING SKELETON */
+.skeleton {
+  height: 120px;
+  background: linear-gradient(90deg,#eee,#ddd,#eee);
+  background-size: 200% 100%;
+  animation: loading 1.2s infinite;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* PDF VIEW */
 iframe {
-  width:100%;
-  height:500px;
-  border:none;
-  margin-top:10px;
+  width: 100%;
+  height: 500px;
+  border: none;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.download {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 15px;
+  background: #145ca8;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
-<h2>Student Result Portal</h2>
+<div class="container">
+  <h1>Result Portal</h1>
+  <p class="subtitle">Check your academic result instantly</p>
 
-<input id="enroll" placeholder="Enrollment">
-<select id="sem">
-  <option value="">Semester</option>
-  <option>1</option><option>2</option><option>3</option>
-  <option>4</option><option>5</option><option>6</option>
-  <option>7</option><option>8</option>
-</select>
+  <input type="text" id="enroll" placeholder="Enrollment Number" />
+  
+  <select id="sem">
+    <option value="">Select Semester</option>
+    <option>1</option><option>2</option><option>3</option>
+    <option>4</option><option>5</option><option>6</option>
+    <option>7</option><option>8</option>
+  </select>
 
-<button onclick="search()">Search</button>
+  <button onclick="search()">Search Result</button>
 
-<div id="out"></div>
+  <div id="output"></div>
 </div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbxqi_qnEnvLk5ZuYjI_BfwV-X5imaGrlr_A92QndsSfvUDy9pqLRKPgPa8tzN1B0VaI/exec";
 
 async function search() {
-  const e = enroll.value;
-  const s = sem.value;
-  out.innerHTML = "Loading...";
+  const enroll = document.getElementById("enroll").value;
+  const sem = document.getElementById("sem").value;
+  const output = document.getElementById("output");
 
-  const res = await fetch(`${API}?enrollment=${e}&semester=${s}`);
-  const data = await res.json();
-
-  if (!data.length) {
-    out.innerHTML = "No result";
+  if (!enroll || !sem) {
+    output.innerHTML = "<p>Please fill all fields</p>";
     return;
   }
 
-  const r = data[0];
+  // ⚡ instant loading UI
+  output.innerHTML = `<div class="skeleton"></div>`;
 
-  const pdf = `${API}?fileId=${r.FileId}`;
-  const download = `https://drive.google.com/uc?export=download&id=${r.FileId}`;
+  try {
+    const res = await fetch(`${API}?enrollment=${enroll}&semester=${sem}`);
+    const data = await res.json();
 
-  out.innerHTML = `
-    <h3>${r.Course}</h3>
-    <p>Semester: ${r.Semester}</p>
+    if (!data.length) {
+      output.innerHTML = "<p>No result found</p>";
+      return;
+    }
 
-    <a href="${download}" target="_blank">Download PDF</a>
+    const r = data[0];
+    const fileId = r.FileId;
 
-    <iframe src="${pdf}"></iframe>
-  `;
+    // ⚡ FAST DRIVE VIEWER
+    const pdfURL = `https://drive.google.com/file/d/${fileId}/preview?embedded=true`;
+    const downloadURL = `https://drive.google.com/uc?export=download&id=${fileId}`;
+
+    output.innerHTML = `
+      <div class="card">
+        <h2>Result Found</h2>
+
+        <div class="info"><b>Course:</b> ${r.Course}</div>
+        <div class="info"><b>Semester:</b> ${r.Semester}</div>
+        <div class="info"><b>Enrollment:</b> ${r.Enrollment}</div>
+
+        <a class="download" href="${downloadURL}" target="_blank">
+          Download PDF
+        </a>
+
+        <iframe src="${pdfURL}" loading="eager"></iframe>
+      </div>
+    `;
+
+  } catch (e) {
+    output.innerHTML = "<p>Error loading result</p>";
+  }
 }
 </script>
 
