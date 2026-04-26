@@ -6,8 +6,8 @@
   <title>Student Result Portal</title>
 
   <style>
-    /* YOUR ENTIRE CSS REMAINS SAME (UNCHANGED) */
     *, *::before, *::after { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,6 +19,7 @@
       align-items: flex-start;
       padding: 40px 20px;
     }
+
     .container {
       background: #fff;
       max-width: 440px;
@@ -28,12 +29,32 @@
       padding: 30px 40px;
       text-align: center;
     }
-    .title { font-size: 2rem; font-weight: 700; margin-bottom: 6px; color: #145ca8; }
-    .subtitle { font-size: 1rem; color: #4a90e2; margin-bottom: 28px; }
 
-    form { display: flex; flex-direction: column; gap: 22px; text-align: left; }
+    .title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #145ca8;
+    }
 
-    label { font-weight: 600; margin-bottom: 6px; color: #1a237e; }
+    .subtitle {
+      font-size: 1rem;
+      color: #4a90e2;
+      margin-bottom: 28px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      text-align: left;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #1a237e;
+    }
 
     input, select {
       padding: 14px 16px;
@@ -53,7 +74,10 @@
       color: #fff;
     }
 
-    .output { margin-top: 28px; min-height: 120px; }
+    .output {
+      margin-top: 28px;
+      min-height: 120px;
+    }
 
     .result-card {
       border: 2px solid #4a90e2;
@@ -62,7 +86,6 @@
       background-color: #e8f0fe;
     }
 
-    /* 🔥 NEW PRO VIEWER STYLE */
     .pdf-viewer {
       width: 100%;
       height: 70vh;
@@ -72,7 +95,9 @@
       background: #fff;
     }
 
-    .error { color: red; }
+    .error {
+      color: red;
+    }
   </style>
 </head>
 
@@ -105,7 +130,7 @@
   </main>
 
 <script>
-const apiURL = "https://script.google.com/macros/s/AKfycbyNMVqOAVX01z-2hPNIfyixXQtkdZ2LHjWF_QrO_5kpmf9s40xaoe9lMhHf_ljCVOEz/exec";
+const apiURL = "https://script.google.com/macros/s/AKfycbxqi_qnEnvLk5ZuYjI_BfwV-X5imaGrlr_A92QndsSfvUDy9pqLRKPgPa8tzN1B0VaI/exec";
 
 async function searchResult() {
   const enroll = document.getElementById("enroll").value.trim();
@@ -114,34 +139,34 @@ async function searchResult() {
 
   output.innerHTML = "Searching...";
 
-  const url = `${apiURL}?enrollment=${enroll}&semester=${sem}`;
+  const url = `${apiURL}?enrollment=${encodeURIComponent(enroll)}&semester=${encodeURIComponent(sem)}`;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
 
-    if (data.length > 0) {
-      const result = data[0];
-
-      const fileId = result.FileId;
-
-      // 🔥 PRO PDF VIEWER (NO DRIVE UI)
-      const pdfURL = `${apiURL}?fileId=${fileId}`;
-
-      output.innerHTML = `
-        <div class="result-card">
-          <h2>Result Found</h2>
-          <p><strong>Course:</strong> ${result.Course}</p>
-          <p><strong>Semester:</strong> ${result.Semester}</p>
-
-          <!-- CLEAN EMBEDDED VIEWER -->
-          <iframe class="pdf-viewer" src="${pdfURL}"></iframe>
-        </div>
-      `;
-    } else {
+    if (!data.length) {
       output.innerHTML = "<p class='error'>No result found</p>";
+      return;
     }
 
+    const result = data[0];
+    const fileId = result.FileId;
+
+    const pdfURL = `${apiURL}?fileId=${encodeURIComponent(fileId)}`;
+
+    output.innerHTML = `
+      <div class="result-card">
+        <h2>Result Found</h2>
+        <p><strong>Course:</strong> ${result.Course}</p>
+        <p><strong>Semester:</strong> ${result.Semester}</p>
+
+        <iframe 
+          class="pdf-viewer"
+          src="${pdfURL}">
+        </iframe>
+      </div>
+    `;
   } catch (e) {
     output.innerHTML = "<p class='error'>Error loading result</p>";
   }
